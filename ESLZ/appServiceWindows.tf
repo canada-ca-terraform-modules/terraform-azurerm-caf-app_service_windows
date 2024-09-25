@@ -13,5 +13,6 @@ module "appServiceWindows" {
   resource_groups = local.resource_groups_all
   subnets = local.subnets
   appServiceWindows = each.value
+  asp = local.asp_id
   tags = var.tags
 }
