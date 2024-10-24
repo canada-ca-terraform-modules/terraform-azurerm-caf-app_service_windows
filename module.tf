@@ -508,10 +508,6 @@ resource "azurerm_windows_web_app" "webapp" {
       connection_string_names = try(sticky_settings.value.connection_string_names, null)
     }
   }
-
-  lifecycle {
-    ignore_changes = [tags]
-  }
 }
 
 resource "azurerm_app_service_custom_hostname_binding" "hostname" {
@@ -523,9 +519,3 @@ resource "azurerm_app_service_custom_hostname_binding" "hostname" {
   # ssl_state = try(each.value.ssl_state, null)
   # thumbprint = try(each.value.thumbprint, null)
 }
-
-# data "azurerm_service_plan" "asp" {
-#   count               = local.asp == null ? 1 : 0
-#   name                = replace("${var.env}-${var.group}-${var.project}-${var.appServiceWindows.asp.name}-asp", "/[//\"'\\[\\]:|<>+=;,?*@&]/", "")
-#   resource_group_name = local.asp_rg
-# }
