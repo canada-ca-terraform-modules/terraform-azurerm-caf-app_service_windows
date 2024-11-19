@@ -3,7 +3,7 @@ variable "appServiceWindows" {
 }
 
 module "appServiceWindows" {
-  source = "github.com/canada-ca-terraform-modules/terraform-azurerm-caf-app_service_windows.git?ref=v1.0.1"
+  source = "github.com/canada-ca-terraform-modules/terraform-azurerm-caf-app_service_windows.git?ref=v1.0.2"
   for_each = var.appServiceWindows
 
   userDefinedString = each.key
