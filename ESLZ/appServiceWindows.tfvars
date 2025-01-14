@@ -18,6 +18,9 @@ appServiceWindows = {
     # Optional: Uncomment to set Custom domain names for the app service
     # custom_hostname_binding = ["example.com"]
 
+    # Optional: Uncomment and set any key value pairs
+    # app_settings = {}
+
     # Required: The block can be empty but must be present
     site_config = {
       always_on           = true
@@ -42,7 +45,7 @@ appServiceWindows = {
       # scm_minimum_tls_version                       = "1.2"
       # use_32_bit_worker                             = true
       # vnet_route_all_enabled                        = true
-      # websockets_enabled                            = fals
+      # websockets_enabled                            = false
       # worker_count                                  = 1
 
       # Optional: Uncomment to set any of these settings
@@ -51,7 +54,7 @@ appServiceWindows = {
       #   docker_registry_url      = "Your Docker Registry URL"
       #   docker_registry_username = "Your Docker Registry Username"
       #   docker_registry_password = "Your Docker Registry Password"
-      #   dotnet_version           = "8.0"
+      #   dotnet_version           = "v8.0"
       #   go_version               = "1.19"
       #   java_server              = "Your Java Server Type"
       #   java_server_version      = "Your Java Server Version"
@@ -61,9 +64,6 @@ appServiceWindows = {
       #   python_version           = "3.9"
       #   ruby_version             = "2.7"
       # }
-
-      # Optional: Uncomment and set any key value pairs
-      # app_setting = {}
 
       # Optional: Uncomment block to set auto heal settings
       # auto_heal_setting = [{
