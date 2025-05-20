@@ -502,9 +502,9 @@ resource "azurerm_windows_web_app" "webapp" {
   }
 
   dynamic "sticky_settings" {
-    for_each = try(var.appServiceWindows.inject_root_cert, false) ? { app_setting_names = ["WEBSITE_LOAD_ROOT_CERTIFICATE"] } : try(var.appServiceWindows.sticky_settings, {})
+    for_each = try(var.appServiceWindows.inject_root_cert, false) ? { app_setting_names = ["WEBSITE_LOAD_ROOT_CERTIFICATES"] } : try(var.appServiceWindows.sticky_settings, {})
     content {
-      app_setting_names       = try(var.appServiceWindows.inject_root_cert, false) ? concat(try(var.appServiceWindows.sticky_settings.app_setting_names, []), ["WEBSITE_LOAD_ROOT_CERTIFICATE"]) : try(var.appServiceWindows.sticky_settings.app_setting_names, null)
+      app_setting_names       = try(var.appServiceWindows.inject_root_cert, false) ? concat(try(var.appServiceWindows.sticky_settings.app_setting_names, []), ["WEBSITE_LOAD_ROOT_CERTIFICATES"]) : try(var.appServiceWindows.sticky_settings.app_setting_names, null)
       connection_string_names = try(var.appServiceWindows.sticky_settings.connection_string_names, null)
     }
   }
