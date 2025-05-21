@@ -4,7 +4,7 @@ resource "azurerm_windows_web_app" "webapp" {
   resource_group_name = local.resource_group_name
   service_plan_id     = local.asp # This is Required for our setup
 
-  app_settings                                   = try(var.appServiceWindows.app_settings, {})
+  app_settings                                   = local.app_settings
   client_affinity_enabled                        = try(var.appServiceWindows.client_affinity_enabled, null)
   client_certificate_enabled                     = try(var.appServiceWindows.client_certificate_enabled, null)
   client_certificate_mode                        = try(var.appServiceWindows.client_certificate_mode, null)
@@ -14,7 +14,7 @@ resource "azurerm_windows_web_app" "webapp" {
   https_only                                     = try(var.appServiceWindows.https_only, true)
   public_network_access_enabled                  = try(var.appServiceWindows.public_network_access_enabled, true)
   key_vault_reference_identity_id                = try(var.appServiceWindows.key_vault_reference_identity_id, null)
-  virtual_network_subnet_id                      = try(var.appServiceWindows.virtual_network_subnet_id, null)
+  virtual_network_subnet_id                      = local.subnet_id
   webdeploy_publish_basic_authentication_enabled = try(var.appServiceWindows.webdeploy_publish_basic_authentication_enabled, null)
   zip_deploy_file                                = try(var.appServiceWindows.zip_deploy_file, null)
 
@@ -44,7 +44,7 @@ resource "azurerm_windows_web_app" "webapp" {
     scm_minimum_tls_version                       = try(var.appServiceWindows.site_config.scm_minimum_tls_version, "1.2")
     scm_use_main_ip_restriction                   = try(var.appServiceWindows.site_config.scm_use_main_ip_restriction, null)
     use_32_bit_worker                             = try(var.appServiceWindows.site_config.use_32_bit_worker, true)
-    vnet_route_all_enabled                        = try(var.appServiceWindows.site_config.vnet_route_all_enabled, false)
+    vnet_route_all_enabled                        = try(var.appServiceWindows.site_config.vnet_route_all_enabled, true)
     websockets_enabled                            = try(var.appServiceWindows.site_config.websockets_enabled, false)
     worker_count                                  = try(var.appServiceWindows.site_config.worker_count, null)
 
@@ -141,9 +141,9 @@ resource "azurerm_windows_web_app" "webapp" {
     dynamic "handler_mapping" {
       for_each = try(var.appServiceWindows.site_config.handler_mapping, {})
       content {
-        extension = handler_mapping.value.extension
+        extension             = handler_mapping.value.extension
         script_processor_path = handler_mapping.value.script_processor_path
-        arguments = try(handler_mapping.value.arguments, null)
+        arguments             = try(handler_mapping.value.arguments, null)
       }
     }
 
@@ -197,14 +197,14 @@ resource "azurerm_windows_web_app" "webapp" {
       for_each = try(var.appServiceWindows.site_config.virtual_application, {})
       content {
         physical_path = virtual_application.value.physical_path
-        preload = virtual_application.value.preload
-        virtual_path = virtual_application.value.virtual_path
+        preload       = virtual_application.value.preload
+        virtual_path  = virtual_application.value.virtual_path
 
         dynamic "virtual_directory" {
           for_each = try(virtual_application.value.virtual_directory, {})
           content {
             physical_path = try(virtual_directory.value.physical_path, null)
-            virtual_path = try(virtual_directory.value.virtual_path, null)
+            virtual_path  = try(virtual_directory.value.virtual_path, null)
           }
         }
       }
@@ -502,10 +502,10 @@ resource "azurerm_windows_web_app" "webapp" {
   }
 
   dynamic "sticky_settings" {
-    for_each = try(var.appServiceWindows.sticky_settings, {})
+    for_each = try(var.appServiceWindows.inject_root_cert, false) ? { app_setting_names = ["WEBSITE_LOAD_ROOT_CERTIFICATES"] } : try(var.appServiceWindows.sticky_settings, {})
     content {
-      app_setting_names       = try(sticky_settings.value.app_setting_names, null)
-      connection_string_names = try(sticky_settings.value.connection_string_names, null)
+      app_setting_names       = try(var.appServiceWindows.inject_root_cert, false) ? concat(try(var.appServiceWindows.sticky_settings.app_setting_names, []), ["WEBSITE_LOAD_ROOT_CERTIFICATES"]) : try(var.appServiceWindows.sticky_settings.app_setting_names, null)
+      connection_string_names = try(var.appServiceWindows.sticky_settings.connection_string_names, null)
     }
   }
 }
@@ -519,3 +519,27 @@ resource "azurerm_app_service_custom_hostname_binding" "hostname" {
   # ssl_state = try(each.value.ssl_state, null)
   # thumbprint = try(each.value.thumbprint, null)
 }
+
+resource "azurerm_app_service_public_certificate" "internal-ca" {
+  count                = try(var.appServiceWindows.inject_root_cert, false) ? 1 : 0
+  app_service_name     = azurerm_windows_web_app.webapp.name
+  resource_group_name  = local.resource_group_name
+  certificate_name     = "GOC-GDC-ROOT-A"
+  certificate_location = "Unknown"
+  blob                 = data.http.cert[0].response_body_base64
+}
+
+module "private_endpoint" {
+  source   = "github.com/canada-ca-terraform-modules/terraform-azurerm-caf-private_endpoint.git?ref=v1.0.2"
+  for_each = try(var.appServiceWindows.private_endpoint, {})
+
+  name                           = "${local.asv-name}-${each.key}"
+  location                       = var.location
+  resource_groups                = var.resource_groups
+  subnets                        = var.subnets
+  private_connection_resource_id = azurerm_windows_web_app.webapp.id
+  private_endpoint               = each.value
+  private_dns_zone_ids           = var.private_dns_zone_ids
+  tags                           = var.tags
+}
+

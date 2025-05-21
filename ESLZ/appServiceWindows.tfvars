@@ -4,7 +4,8 @@ appServiceWindows = {
     asp                           = "name"
     enabled                       = true
     https_only                    = true
-    public_network_access_enabled = true
+    public_network_access_enabled = false
+    inject_root_cert = false
     # client_affinity_enabled                        = true
     # client_certificated_enabled                    = false
     # client_certificate_mode                        = "Required"
@@ -21,6 +22,15 @@ appServiceWindows = {
     # Optional: Uncomment and set any key value pairs
     # app_settings = {}
 
+    private_endpoint = {
+        asv = {                                                          # Key defines the userDefinedstring
+          resource_group       = "Project"                                # Required: Resource group name, i.e Project, Management, DNS, etc, or the resource group ID
+          subnet               = "OZ"                                     # Required: Subnet name, i.e OZ,MAZ, etc, or the subnet ID
+          subresource_names    = ["sites"]                                 # Required: Even if it's a list, only one resource is allowed for most first party Azure resource. It's a terraform requirement. See: https://learn.microsoft.com/en-us/azure/private-link/private-endpoint-overview#private-link-resource for list of subresrouce
+          is_manual_connection = false                                    # Optional: Possible values: true, false. Default: true
+          # local_dns_zone       = "privatelink.blob.core.windows.net"    # Optional: Name of the local DNS zone for the private endpoint. To change this value, you must taint the associated resource
+        }
+    }
     # Required: The block can be empty but must be present
     site_config = {
       always_on           = true
@@ -367,9 +377,9 @@ appServiceWindows = {
     # }]
 
     # Optional: Uncomment to set sticky settings
-    # sticky_settings = [{
+    # sticky_settings = {
     #   app_setting_names       = ["AppSetting1", "AppSetting2"]
     #   connection_string_names = ["ConnectionString1", "ConnectionString2"]
-    # }]
+    # }
   }
 }
