@@ -1,5 +1,5 @@
 locals {
-  cert_url = strcontains(var.env, "G3") ? "https://g3pceslzresentdfa0353e.blob.core.windows.net/publicresources/GOC-GDC-ROOT-A.cer" : "https://gcpcenteslzpublicblob4df.blob.core.windows.net/publicresources/GOC-GDC-ROOT-A.cer" 
+  cert_url = strcontains(var.env, "G3") ? "https://g3pceslzresentdfa0353e.blob.core.windows.net/publicresources/GOC-GDC-ROOT-A.crt" : "https://gcpcenteslzpublicblob4df.blob.core.windows.net/publicresources/GOC-GDC-ROOT-A.crt" 
 }
 
 data "http" "cert" {
