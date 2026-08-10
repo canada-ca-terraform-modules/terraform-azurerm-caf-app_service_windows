@@ -1,20 +1,83 @@
+# terraform-azurerm-caf-app_service_windows
+
+Terraform CAF module to deploy an Azure Windows Web App (`azurerm_windows_web_app`), with optional custom hostname bindings, an internal root CA public certificate, and private endpoint(s).
+
+## Usage
+
+### ESLZ module block (`ESLZ/appServiceWindows.tf`)
+
+```hcl
+module "appServiceWindows" {
+  source   = "github.com/canada-ca-terraform-modules/terraform-azurerm-caf-app_service_windows.git?ref=v1.1.0"
+  for_each = var.appServiceWindows
+
+  userDefinedString    = each.key
+  env                  = var.env
+  group                = var.group
+  project              = var.project
+  resource_groups      = local.resource_groups_all
+  subnets              = local.subnets
+  appServiceWindows    = each.value
+  private_dns_zone_ids = local.Project-dns-zone
+  asp                  = local.asp_id
+  tags                 = var.tags
+}
+```
+
+### ESLZ tfvars pattern (`ESLZ/appServiceWindows.tfvars`)
+
+```hcl
+appServiceWindows = {
+  test = {
+    resource_group = "Project"
+    asp            = "name"
+    https_only     = true
+    site_config = {
+      always_on = true
+    }
+  }
+}
+```
+
+## New arguments (azurerm >= 5.0)
+
+| Key | Type | Description |
+|---|---|---|
+| `virtual_network_backup_restore_enabled` | bool | Whether backup and restore operations over the linked virtual network are enabled (optional) |
+| `virtual_network_image_pull_enabled` | bool | Whether traffic for the image pull should be routed over the virtual network (optional) |
+| `site_config.minimum_tls_cipher_suite` | string | The minimum cipher suite of TLS required for SSL requests (optional) |
+
+## Testing
+
+```bash
+terraform fmt -recursive && terraform init -backend=false && terraform validate && terraform test
+```
+
+## CI
+
+GitHub Actions workflow at `.github/workflows/terraform-ci.yml` runs fmt, init, validate, test, and tflint on every PR.
+
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
 
-No requirements.
+| Name | Version |
+|------|---------|
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.9 |
+| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 5.0 |
+| <a name="requirement_http"></a> [http](#requirement\_http) | ~> 3.6 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | n/a |
-| <a name="provider_http"></a> [http](#provider\_http) | n/a |
+| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 5.0 |
+| <a name="provider_http"></a> [http](#provider\_http) | ~> 3.6 |
 
 ## Modules
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_private_endpoint"></a> [private\_endpoint](#module\_private\_endpoint) | github.com/canada-ca-terraform-modules/terraform-azurerm-caf-private_endpoint.git | v1.0.2 |
+| <a name="module_private_endpoint"></a> [private\_endpoint](#module\_private\_endpoint) | github.com/canada-ca-terraform-modules/terraform-azurerm-caf-private_endpoint.git | v1.2.0 |
 
 ## Resources
 
@@ -29,7 +92,7 @@ No requirements.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_appServiceWindows"></a> [appServiceWindows](#input\_appServiceWindows) | Object containing all parameters for the Linux App Service | `any` | `{}` | no |
+| <a name="input_appServiceWindows"></a> [appServiceWindows](#input\_appServiceWindows) | Object containing all parameters for the Windows App Service | `any` | `{}` | no |
 | <a name="input_asp"></a> [asp](#input\_asp) | Object containing a map of name and ID for the App Service Plan in the target subscription | `any` | `null` | no |
 | <a name="input_env"></a> [env](#input\_env) | (Required) Env value for the name of the resource | `string` | n/a | yes |
 | <a name="input_group"></a> [group](#input\_group) | (Required) Group value for the name of the resource | `string` | n/a | yes |
