@@ -15,6 +15,8 @@ resource "azurerm_windows_web_app" "webapp" {
   public_network_access_enabled                  = try(var.appServiceWindows.public_network_access_enabled, true)
   key_vault_reference_identity_id                = try(var.appServiceWindows.key_vault_reference_identity_id, null)
   virtual_network_subnet_id                      = local.subnet_id
+  virtual_network_backup_restore_enabled         = try(var.appServiceWindows.virtual_network_backup_restore_enabled, null)
+  virtual_network_image_pull_enabled             = try(var.appServiceWindows.virtual_network_image_pull_enabled, null)
   webdeploy_publish_basic_authentication_enabled = try(var.appServiceWindows.webdeploy_publish_basic_authentication_enabled, null)
   zip_deploy_file                                = try(var.appServiceWindows.zip_deploy_file, null)
 
@@ -38,6 +40,7 @@ resource "azurerm_windows_web_app" "webapp" {
     local_mysql_enabled                           = try(var.appServiceWindows.site_config.local_mysql_enabled, false)
     managed_pipeline_mode                         = try(var.appServiceWindows.site_config.managed_pipeline_mode, "Integrated")
     minimum_tls_version                           = try(var.appServiceWindows.site_config.minimum_tls_version, "1.2")
+    minimum_tls_cipher_suite                      = try(var.appServiceWindows.site_config.minimum_tls_cipher_suite, null)
     remote_debugging_enabled                      = try(var.appServiceWindows.site_config.remote_debugging_enabled, false)
     remote_debugging_version                      = try(var.appServiceWindows.site_config.remote_debugging_version, "VS2022")
     scm_ip_restriction_default_action             = try(var.appServiceWindows.site_config.scm_ip_restriction_default_action, "Allow")
@@ -530,7 +533,7 @@ resource "azurerm_app_service_public_certificate" "internal-ca" {
 }
 
 module "private_endpoint" {
-  source   = "github.com/canada-ca-terraform-modules/terraform-azurerm-caf-private_endpoint.git?ref=v1.0.2"
+  source   = "github.com/canada-ca-terraform-modules/terraform-azurerm-caf-private_endpoint.git?ref=v1.2.0"
   for_each = try(var.appServiceWindows.private_endpoint, {})
 
   name                           = "${local.asv-name}-${each.key}"

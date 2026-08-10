@@ -5,7 +5,7 @@ appServiceWindows = {
     enabled                       = true
     https_only                    = true
     public_network_access_enabled = false
-    inject_root_cert = false
+    inject_root_cert              = false
     # client_affinity_enabled                        = true
     # client_certificated_enabled                    = false
     # client_certificate_mode                        = "Required"
@@ -15,6 +15,8 @@ appServiceWindows = {
     # virtual_network_subnet_id                      = "Your VNet Subnet ID"
     # webdeploy_publish_basic_authentication_enabled = true 
     # zip_deploy_file                                = "path/to/your/deployment.zip"
+    # virtual_network_backup_restore_enabled         = true  # Optional: New in azurerm >= 5.0. Enable backup/restore over the linked VNet
+    # virtual_network_image_pull_enabled             = true  # Optional: New in azurerm >= 5.0. Route image pull traffic over the linked VNet
 
     # Optional: Uncomment to set Custom domain names for the app service
     # custom_hostname_binding = ["example.com"]
@@ -23,21 +25,22 @@ appServiceWindows = {
     # app_settings = {}
 
     private_endpoint = {
-        asv = {                                                          # Key defines the userDefinedstring
-          resource_group       = "Project"                                # Required: Resource group name, i.e Project, Management, DNS, etc, or the resource group ID
-          subnet               = "OZ"                                     # Required: Subnet name, i.e OZ,MAZ, etc, or the subnet ID
-          subresource_names    = ["sites"]                                 # Required: Even if it's a list, only one resource is allowed for most first party Azure resource. It's a terraform requirement. See: https://learn.microsoft.com/en-us/azure/private-link/private-endpoint-overview#private-link-resource for list of subresrouce
-          is_manual_connection = false                                    # Optional: Possible values: true, false. Default: true
-          # local_dns_zone       = "privatelink.blob.core.windows.net"    # Optional: Name of the local DNS zone for the private endpoint. To change this value, you must taint the associated resource
-        }
+      asv = {                            # Key defines the userDefinedstring
+        resource_group       = "Project" # Required: Resource group name, i.e Project, Management, DNS, etc, or the resource group ID
+        subnet               = "OZ"      # Required: Subnet name, i.e OZ,MAZ, etc, or the subnet ID
+        subresource_names    = ["sites"] # Required: Even if it's a list, only one resource is allowed for most first party Azure resource. It's a terraform requirement. See: https://learn.microsoft.com/en-us/azure/private-link/private-endpoint-overview#private-link-resource for list of subresrouce
+        is_manual_connection = false     # Optional: Possible values: true, false. Default: true
+        # local_dns_zone       = "privatelink.blob.core.windows.net"    # Optional: Name of the local DNS zone for the private endpoint. To change this value, you must taint the associated resource
+      }
     }
     # Required: The block can be empty but must be present
     site_config = {
-      always_on           = true
+      always_on = true
       # default_documents   = ["index.html", "index.php"]
       http2_enabled       = true
       minimum_tls_version = "1.2"
-      # ftps_state          = "Disabled"
+      # ftps_state              = "Disabled"
+      # minimum_tls_cipher_suite = "TLS_AES_128_GCM_SHA256"  # Optional: New in azurerm >= 5.0
       # api_definition_url                            = "URL to your API definition"
       # api_management_api_id                         = "Your API Management API ID"
       # app_command_line                              = "Your command line to start the app"
