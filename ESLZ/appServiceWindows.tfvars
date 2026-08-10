@@ -53,7 +53,7 @@ appServiceWindows = {
       # local_mysql_enabled                           = true
       # managed_pipeline_mode                         = "Integrated"
       # remote_debugging_enabled                      = true
-      # remote_debugging_version                      = "VS2019"
+      # remote_debugging_version                      = "VS2022"  # azurerm >= 5.0 only supports VS2022
       # scm_ip_restriction_default_action             = "Allow"
       # scm_minimum_tls_version                       = "1.2"
       # use_32_bit_worker                             = true

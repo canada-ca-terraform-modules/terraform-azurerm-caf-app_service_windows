@@ -246,7 +246,7 @@ run "storage_account" {
       site_config    = { always_on = true }
       storage_account = {
         default = {
-          access_key   = "fake-access-key"
+          access_key   = "fake-access-key" # test fixture — not a real key
           account_name = "examplesa"
           name         = "examplemount"
           share_name   = "exampleshare"

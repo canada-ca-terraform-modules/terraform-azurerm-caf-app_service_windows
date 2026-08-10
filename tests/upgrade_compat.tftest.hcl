@@ -2,6 +2,10 @@
 # Purpose: catch breaking resource changes before dev tests on real infra.
 # baseline_apply simulates the currently-deployed (pre-upgrade) config;
 # upgrade_plan_no_replacement plans the upgraded code against that state.
+# Scope: plan-level schema compatibility only (mock_provider generates mock
+# state, it does not read a real terraform.tfstate produced by v1.0.4). Live
+# compat against a deployed instance was separately confirmed by the
+# terraform-module-upgrade-probe skill (see CHANGELOG.md).
 mock_provider "azurerm" {}
 mock_provider "http" {}
 

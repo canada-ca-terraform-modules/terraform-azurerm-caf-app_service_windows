@@ -28,6 +28,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Fixed
 
 - `appServiceWindows-object` output rebuilt as an explicit object literal (never the bare `azurerm_windows_web_app.webapp` reference) to eliminate a `Deprecated value used` warning on every plan/apply, surfaced by the live upgrade probe. azurerm >= 5.0 deprecated `site_config.application_stack.java_container` and `.java_container_version` in favour of `tomcat_version`/`java_embedded_server_enabled`; the resource always exposes these fields as computed attributes (even when unset by the caller), so referencing the whole resource object always tripped the warning regardless of config. Every other attribute is preserved for full parity — confirmed via `terraform state show` against a live-deployed instance and re-verified with the live probe harness (warning present on the unmodified v1.0.4 baseline, absent on the fixed local checkout).
+- `site_config.health_check_eviction_time_in_min` in `module.tf` read from the wrong path (`var.appServiceWindows.health_check_eviction_time_in_min` instead of `var.appServiceWindows.site_config.health_check_eviction_time_in_min`), silently discarding the value for any caller who set it under `site_config` as documented in `ESLZ/appServiceWindows.tfvars`. Pre-existing bug, caught by PR review.
+- Stale `remote_debugging_version = "VS2019"` example in `ESLZ/appServiceWindows.tfvars` updated to `"VS2022"` — azurerm >= 5.0 only accepts `VS2022`, so the old example value would be rejected at plan time.
+- `.github/workflows/terraform-ci.yml` job now has `timeout-minutes: 10` to bound worst-case CI runtime, matching `release.yml`.
+
+### Breaking Changes
+
+- `output.appServiceWindows-object` is now `sensitive = true`. Callers that pass this output into a `for_each`/`count` expression (e.g. `for_each = module.appServiceWindows`) will get `Error: Invalid for_each argument`. Use the separate non-sensitive `id`/`name` outputs instead.
+- `appServiceWindows-object.site_config[0].application_stack[0].java_container` and `.java_container_version` are no longer exposed (deprecated by azurerm >= 5.0 in favour of `tomcat_version`/`java_embedded_server_enabled`). Callers reading these attributes will get an `Unsupported attribute` error.
 
 ### Notes
 
@@ -35,3 +43,5 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `azurerm_app_service_custom_hostname_binding`, `azurerm_app_service_public_certificate`, and `data.http.cert` have no breaking changes between the previously-unpinned provider version and azurerm 5.0.1 / http 3.6.0.
 - `remote_debugging_version` in azurerm >= 5.0 only supports `VS2022` — the module's default was already `VS2022`, so no change was required.
 - Live upgrade probe (`terraform-module-upgrade-probe` skill) confirmed a clean, purely additive upgrade: `0 to add, 1 to change, 0 to destroy` when the 3 new arguments are explicitly set, and `0 to add, 0 to change, 0 to destroy` when they're left unset — the module never forces changes onto existing resources that don't opt into the new arguments.
+- PR review flagged `site_config.minimum_tls_cipher_suite` as needing `list(string)`. Verified against the provider source (`internal/services/appservice/helpers/windows_web_app_schema.go` in `hashicorp/terraform-provider-azurerm`): the schema declares it `pluginsdk.TypeString` — a scalar is correct. No change made; module, tests, tfvars example, and README are unchanged for this argument.
+- Other PR review findings not addressed in this PR (tracked as follow-ups, not blockers): `ip_restriction_default_action`/`scm_ip_restriction_default_action` defaulting to `"Allow"` (matches Azure's own platform default; changing to `"Deny"` is a deliberate policy decision needing separate review), SHA-pinning GitHub Actions, a structured (`optional()`-based) type for the `appServiceWindows` variable, and negative test cases for invalid input.
