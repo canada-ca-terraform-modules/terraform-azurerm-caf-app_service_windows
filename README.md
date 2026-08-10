@@ -70,8 +70,8 @@ GitHub Actions workflow at `.github/workflows/terraform-ci.yml` runs fmt, init, 
 
 | Name | Version |
 |------|---------|
-| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | 5.0.1 |
-| <a name="provider_http"></a> [http](#provider\_http) | 3.6.0 |
+| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 5.0 |
+| <a name="provider_http"></a> [http](#provider\_http) | ~> 3.6 |
 
 ## Modules
 
