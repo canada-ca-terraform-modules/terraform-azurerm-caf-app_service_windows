@@ -1,4 +1,5 @@
 terraform {
+  # no-op: keeps this file in the diff so live-test.yml's paths filter triggers on PR B
   required_version = ">= 1.9"
   required_providers {
     azurerm = {
